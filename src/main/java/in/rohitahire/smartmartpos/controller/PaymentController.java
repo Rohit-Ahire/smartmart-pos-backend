@@ -21,14 +21,13 @@ public class PaymentController {
     @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Long> request) {
         try {
+            Long billId = request.get("billId");
 
-            Long amount = request.get("amount");
-
-            if (amount == null || amount <= 0) {
-                return ResponseEntity.badRequest().body("amount is required");
+            if (billId == null) {
+                return ResponseEntity.badRequest().body("billId is required");
             }
 
-            PaymentOrderResponse response = paymentService.createOrder(amount);
+            PaymentOrderResponse response = paymentService.createOrder(billId);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -44,7 +43,6 @@ public class PaymentController {
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerifyRequest request) {
         try {
-
             boolean success = paymentService.verifyPayment(request);
 
             Map<String, String> response = new HashMap<>();

@@ -24,6 +24,12 @@ public class Bill {
     @Column(nullable = false)
     private String customerName;
 
+    @Column
+    private Long customerId;
+
+    @Column
+    private String customerPhone;
+
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
@@ -32,6 +38,12 @@ public class Bill {
 
     @Column(nullable = false)
     private String paymentStatus;
+
+    @Column
+    private String razorpayOrderId;
+
+    @Column
+    private String razorpayPaymentId;
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillItem> items = new ArrayList<>();

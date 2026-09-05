@@ -1,6 +1,6 @@
 package in.rohitahire.smartmartpos.controller;
 
-import in.rohitahire.smartmartpos.service.S3Service;
+import in.rohitahire.smartmartpos.service.LocalStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,13 +15,13 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173")
 public class ImageUploadController {
 
-    private final S3Service s3Service;
+    private final LocalStorageService localStorageService;
 
     @PostMapping
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
 
         try {
-            String imageUrl = s3Service.uploadFile(file);
+            String imageUrl = localStorageService.saveFile(file);
 
             Map<String, String> response = new HashMap<>();
             response.put("imageUrl", imageUrl);

@@ -1,10 +1,15 @@
 package in.rohitahire.smartmartpos.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class PaymentVerifyRequest {
 
+    private Long billId;
     private String razorpayOrderId;
     private String razorpayPaymentId;
     private String razorpaySignature;

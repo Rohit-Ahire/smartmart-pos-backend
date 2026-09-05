@@ -15,7 +15,11 @@ public class BillResponse {
 
     private Long id;
     private String customerName;
+    private Long customerId;
+    private String customerPhone;
     private BigDecimal totalAmount;
     private String createdAt;
     private String paymentStatus;
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
 }

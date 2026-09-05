@@ -10,5 +10,6 @@ import java.util.List;
 public class BillRequest {
 
     private String customerName;
+    private Long customerId;
     private List<BillItemRequest> items;
 }

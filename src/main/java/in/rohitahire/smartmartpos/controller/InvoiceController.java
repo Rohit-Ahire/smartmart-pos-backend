@@ -25,6 +25,8 @@ public class InvoiceController {
 
             response.setId(bill.getId());
             response.setCustomerName(bill.getCustomerName());
+            response.setCustomerId(bill.getCustomerId());
+            response.setCustomerPhone(bill.getCustomerPhone());
             response.setTotalAmount(bill.getTotalAmount());
 
             if (bill.getCreatedAt() != null) {
@@ -32,6 +34,8 @@ public class InvoiceController {
             }
 
             response.setPaymentStatus(bill.getPaymentStatus());
+            response.setRazorpayOrderId(bill.getRazorpayOrderId());
+            response.setRazorpayPaymentId(bill.getRazorpayPaymentId());
 
             return response;
         }).collect(Collectors.toList());
@@ -54,6 +58,8 @@ public class InvoiceController {
         }
 
         response.setPaymentStatus(bill.getPaymentStatus());
+        response.setRazorpayOrderId(bill.getRazorpayOrderId());
+        response.setRazorpayPaymentId(bill.getRazorpayPaymentId());
 
         return response;
     }

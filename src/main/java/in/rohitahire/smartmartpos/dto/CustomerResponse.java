@@ -13,4 +13,7 @@ public class CustomerResponse {
     private String name;
     private String phone;
     private String email;
+    private long billCount;
+    private java.math.BigDecimal totalSpent;
+    private String lastVisit;
 }
