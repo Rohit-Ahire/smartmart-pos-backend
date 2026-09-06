@@ -58,7 +58,7 @@ public class PdfService {
         meta.setWidthPercentage(100);
 
         meta.addCell(cell("Bill ID: #" + bill.getId(), boldFont));
-        meta.addCell(cell("Date: " + bill.getCreatedAt(), boldFont));
+        meta.addCell(cell("Date: " + (bill.getCreatedAt() != null ? bill.getCreatedAt() : "-"), boldFont));
         meta.addCell(cell("Customer: " + bill.getCustomerName(), subFont));
         meta.addCell(cell("Status: " + bill.getPaymentStatus(), boldFont));
 
@@ -83,19 +83,23 @@ public class PdfService {
 
         for (BillItem item : bill.getItems()) {
 
-            String productName = item.getProduct() != null
-                    ? item.getProduct().getName()
-                    : "Item " + item.getId();
+            String productName = "Item " + item.getId();
+            if (item.getProduct() != null && item.getProduct().getName() != null) {
+                productName = item.getProduct().getName();
+            }
 
-            BigDecimal lineTotal = item.getPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()))
+            BigDecimal price = item.getPrice() != null ? item.getPrice() : BigDecimal.ZERO;
+            int qty = item.getQuantity() != null ? item.getQuantity() : 0;
+
+            BigDecimal lineTotal = price
+                    .multiply(BigDecimal.valueOf(qty))
                     .setScale(2, RoundingMode.HALF_UP);
 
             subtotal = subtotal.add(lineTotal);
 
             items.addCell(cell(productName, subFont));
-            items.addCell(cell(String.valueOf(item.getQuantity()), subFont));
-            items.addCell(cell("Rs. " + item.getPrice(), subFont));
+            items.addCell(cell(String.valueOf(qty), subFont));
+            items.addCell(cell("Rs. " + price, subFont));
             items.addCell(cell("Rs. " + lineTotal, subFont));
         }
 
