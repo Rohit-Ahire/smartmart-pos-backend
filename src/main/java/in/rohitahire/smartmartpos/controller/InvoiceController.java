@@ -1,45 +1,65 @@
 package in.rohitahire.smartmartpos.controller;
 
+import in.rohitahire.smartmartpos.dto.BillResponse;
 import in.rohitahire.smartmartpos.entity.Bill;
-import in.rohitahire.smartmartpos.service.BillService;
-import in.rohitahire.smartmartpos.service.PdfService;
+import in.rohitahire.smartmartpos.repository.BillRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
-@RequestMapping("/api/invoice")
+@RequestMapping("/api/invoices")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {
-        "http://localhost:5173",
-        "https://*.vercel.app"
-})
 public class InvoiceController {
 
-    private final BillService billService;
-    private final PdfService pdfService;
+    private final BillRepository billRepository;
 
-    @GetMapping("/{billId}")
-    public ResponseEntity<Bill> getInvoice(@PathVariable Long billId) {
+    @GetMapping
+    public List<BillResponse> getAllInvoices() {
 
-        Bill bill = billService.getBillById(billId);
+        return billRepository.findAll().stream().map(bill -> {
+            BillResponse response = new BillResponse();
 
-        return ResponseEntity.ok(bill);
+            response.setId(bill.getId());
+            response.setCustomerName(bill.getCustomerName());
+            response.setCustomerId(bill.getCustomerId());
+            response.setCustomerPhone(bill.getCustomerPhone());
+            response.setTotalAmount(bill.getTotalAmount());
+
+            if (bill.getCreatedAt() != null) {
+                response.setCreatedAt(bill.getCreatedAt().toString());
+            }
+
+            response.setPaymentStatus(bill.getPaymentStatus());
+            response.setRazorpayOrderId(bill.getRazorpayOrderId());
+            response.setRazorpayPaymentId(bill.getRazorpayPaymentId());
+
+            return response;
+        }).collect(Collectors.toList());
     }
 
-    @GetMapping("/{billId}/pdf")
-    public ResponseEntity<byte[]> downloadPdf(@PathVariable Long billId) throws Exception {
+    @GetMapping("/{id}")
+    public BillResponse getInvoice(@PathVariable Long id) {
 
-        Bill bill = billService.getBillById(billId);
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
 
-        byte[] pdf = pdfService.generateInvoicePdf(bill);
+        BillResponse response = new BillResponse();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=Invoice-" + bill.getId() + ".pdf")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdf);
+        response.setId(bill.getId());
+        response.setCustomerName(bill.getCustomerName());
+        response.setTotalAmount(bill.getTotalAmount());
+
+        if (bill.getCreatedAt() != null) {
+            response.setCreatedAt(bill.getCreatedAt().toString());
+        }
+
+        response.setPaymentStatus(bill.getPaymentStatus());
+        response.setRazorpayOrderId(bill.getRazorpayOrderId());
+        response.setRazorpayPaymentId(bill.getRazorpayPaymentId());
+
+        return response;
     }
 }
