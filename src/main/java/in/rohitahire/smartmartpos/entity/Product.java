@@ -30,4 +30,8 @@ public class Product {
     private Integer quantity;
 
     private String imageUrl;
+
+    @Builder.Default
+    @Column(nullable=false, columnDefinition="boolean default true")
+    private Boolean active = true;
 }

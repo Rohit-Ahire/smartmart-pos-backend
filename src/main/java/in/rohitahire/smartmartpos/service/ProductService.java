@@ -32,7 +32,7 @@ public class ProductService {
 
     public List<ProductResponse> getAllProducts(){
 
-        return productRepository.findAll()
+        return productRepository.findByActiveTrue()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -62,7 +62,11 @@ public class ProductService {
 
     public String deleteProduct(Long id){
 
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product Not Found"));
+
+        product.setActive(false);
+        productRepository.save(product);
 
         return "Product Deleted Successfully";
     }
