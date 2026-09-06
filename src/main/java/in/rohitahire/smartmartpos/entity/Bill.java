@@ -33,6 +33,9 @@ public class Bill {
     @Column(nullable = false)
     private String paymentStatus;
 
+    @Column(nullable = false)
+    private String paymentMethod;
+
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillItem> items = new ArrayList<>();
 }

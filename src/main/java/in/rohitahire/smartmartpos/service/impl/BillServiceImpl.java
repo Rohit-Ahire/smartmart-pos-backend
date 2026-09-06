@@ -1,14 +1,13 @@
 package in.rohitahire.smartmartpos.service.impl;
 
-import in.rohitahire.smartmartpos.dto.BillItemRequest;
-import in.rohitahire.smartmartpos.dto.BillRequest;
-import in.rohitahire.smartmartpos.dto.BillResponse;
+import in.rohitahire.smartmartpos.dto.ProductRequest;
 import in.rohitahire.smartmartpos.entity.Bill;
 import in.rohitahire.smartmartpos.entity.BillItem;
 import in.rohitahire.smartmartpos.entity.Product;
 import in.rohitahire.smartmartpos.repository.BillRepository;
 import in.rohitahire.smartmartpos.repository.ProductRepository;
 import in.rohitahire.smartmartpos.service.BillService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,60 +24,64 @@ public class BillServiceImpl implements BillService {
     private final ProductRepository productRepository;
 
     @Override
-    public BillResponse createBill(BillRequest request) {
+    @Transactional
+    public Bill createBill(String customerName,
+                           String paymentMethod,
+                           List<ProductRequest> items) {
 
         Bill bill = new Bill();
-        bill.setCustomerName(request.getCustomerName());
+
+        bill.setCustomerName(customerName);
         bill.setCreatedAt(LocalDateTime.now());
-        bill.setPaymentStatus("PENDING");
+        bill.setPaymentMethod(paymentMethod);
+
+        if ("ONLINE".equalsIgnoreCase(paymentMethod)) {
+            bill.setPaymentStatus("PENDING");
+        } else {
+            bill.setPaymentStatus("SUCCESS");
+        }
 
         List<BillItem> billItems = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
 
-        for (BillItemRequest item : request.getItems()) {
+        for (ProductRequest request : items) {
 
-            Product product = productRepository.findById(item.getProductId())
+            Product product = productRepository.findById(request.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            // Stock validation
-            if (product.getQuantity() < item.getQuantity()) {
+            if (product.getQuantity() < request.getQuantity()) {
                 throw new RuntimeException(
-                        "Insufficient stock for " + product.getName() +
-                                ". Available: " + product.getQuantity()
+                        "Insufficient stock for " + product.getName()
                 );
             }
 
-            // Reduce stock
-            product.setQuantity(product.getQuantity() - item.getQuantity());
+            product.setQuantity(
+                    product.getQuantity() - request.getQuantity()
+            );
+
             productRepository.save(product);
 
             BillItem billItem = new BillItem();
+
             billItem.setBill(bill);
             billItem.setProduct(product);
-            billItem.setQuantity(item.getQuantity());
+            billItem.setQuantity(request.getQuantity());
             billItem.setPrice(product.getPrice());
 
             billItems.add(billItem);
 
             total = total.add(
-                    product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
+                    product.getPrice()
+                            .multiply(BigDecimal.valueOf(request.getQuantity()))
             );
         }
 
         bill.setItems(billItems);
         bill.setTotalAmount(total);
 
-        Bill savedBill = billRepository.save(bill);
-
-        BillResponse response = new BillResponse();
-        response.setId(savedBill.getId());
-        response.setCustomerName(savedBill.getCustomerName());
-        response.setTotalAmount(savedBill.getTotalAmount());
-        response.setCreatedAt(savedBill.getCreatedAt().toString());
-        response.setPaymentStatus(savedBill.getPaymentStatus());
-
-        return response;
+        return billRepository.save(bill);
     }
+
     @Override
     public List<Bill> getAllBills() {
         return billRepository.findAll();
@@ -86,6 +89,7 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public Bill getBillById(Long id) {
+
         return billRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bill not found"));
     }

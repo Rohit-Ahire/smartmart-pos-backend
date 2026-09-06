@@ -3,67 +3,50 @@ package in.rohitahire.smartmartpos.controller;
 import in.rohitahire.smartmartpos.dto.PaymentOrderResponse;
 import in.rohitahire.smartmartpos.dto.PaymentVerifyRequest;
 import in.rohitahire.smartmartpos.service.PaymentService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://*.vercel.app"
+})
 public class PaymentController {
 
     private final PaymentService paymentService;
 
     @PostMapping("/create-order")
-    public ResponseEntity<?> createOrder(@RequestBody Map<String, Long> request) {
-        try {
+    public ResponseEntity<PaymentOrderResponse> createOrder(
+            @RequestBody CreateOrderRequest request) throws Exception {
 
-            Long amount = request.get("amount");
-
-            if (amount == null || amount <= 0) {
-                return ResponseEntity.badRequest().body("amount is required");
-            }
-
-            PaymentOrderResponse response = paymentService.createOrder(amount);
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-
-            return ResponseEntity.status(500).body(error);
+        if (request.getBillId() == null) {
+            throw new RuntimeException("billId is required");
         }
+
+        return ResponseEntity.ok(
+                paymentService.createOrder(request.getBillId())
+        );
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerifyRequest request) {
-        try {
+    public ResponseEntity<String> verifyPayment(
+            @RequestBody PaymentVerifyRequest request) throws Exception {
 
-            boolean success = paymentService.verifyPayment(request);
+        boolean verified = paymentService.verifyPayment(request);
 
-            Map<String, String> response = new HashMap<>();
-
-            if (success) {
-                response.put("status", "success");
-                return ResponseEntity.ok(response);
-            }
-
-            response.put("status", "failed");
-            return ResponseEntity.badRequest().body(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-
-            return ResponseEntity.status(500).body(error);
+        if (verified) {
+            return ResponseEntity.ok("Payment verified successfully");
         }
+
+        return ResponseEntity.badRequest().body("Invalid payment signature");
+    }
+
+    @Data
+    public static class CreateOrderRequest {
+        private Long billId;
     }
 }

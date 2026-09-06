@@ -26,6 +26,10 @@ public class S3Service {
 
     public String uploadFile(MultipartFile file) throws IOException {
 
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("File is empty");
+        }
+
         String fileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -40,6 +44,35 @@ public class S3Service {
                 RequestBody.fromBytes(file.getBytes())
         );
 
-        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
+        return String.format(
+                "https://%s.s3.%s.amazonaws.com/%s",
+                bucketName,
+                region,
+                fileName
+        );
+    }
+
+    public void deleteFile(String imageUrl) {
+
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+
+        String prefix = String.format(
+                "https://%s.s3.%s.amazonaws.com/",
+                bucketName,
+                region
+        );
+
+        if (!imageUrl.startsWith(prefix)) {
+            return;
+        }
+
+        String key = imageUrl.replace(prefix, "");
+
+        s3Client.deleteObject(builder -> builder
+                .bucket(bucketName)
+                .key(key)
+        );
     }
 }

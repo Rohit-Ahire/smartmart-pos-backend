@@ -1,14 +1,22 @@
 package in.rohitahire.smartmartpos.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class BillRequest {
 
     private String customerName;
-    private List<BillItemRequest> items;
+
+    // CASH or ONLINE
+    private String paymentMethod;
+
+    private List<ProductRequest> items;
 }

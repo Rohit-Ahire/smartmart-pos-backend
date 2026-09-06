@@ -1,33 +1,36 @@
 package in.rohitahire.smartmartpos.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "payments")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "bill_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bill_id", nullable = false, unique = true)
     private Bill bill;
 
+    @Column(nullable = false)
     private Double amount;
 
-    @Column(name = "razorpay_order_id")
+    @Column(nullable = false, unique = true)
     private String razorpayOrderId;
 
-    @Column(name = "razorpay_payment_id")
     private String razorpayPaymentId;
 
-    @Column(name = "razorpay_signature")
+    @Column(length = 500)
     private String razorpaySignature;
 
+    @Column(nullable = false)
     private String status;
 }

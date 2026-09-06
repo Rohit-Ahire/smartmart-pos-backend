@@ -1,18 +1,23 @@
 package in.rohitahire.smartmartpos.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRequest {
 
+    // Product fields
     private String name;
     private String category;
     private BigDecimal price;
     private Integer quantity;
     private String imageUrl;
+
+    // Billing field
+    private Long productId;
 }

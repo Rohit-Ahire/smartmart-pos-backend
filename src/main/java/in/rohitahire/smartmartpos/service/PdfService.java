@@ -1,39 +1,91 @@
 package in.rohitahire.smartmartpos.service;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
 import in.rohitahire.smartmartpos.entity.Bill;
+import in.rohitahire.smartmartpos.entity.BillItem;
 import org.springframework.stereotype.Service;
 
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 
 @Service
 public class PdfService {
 
-    public byte[] generateInvoice(Bill bill) throws Exception {
+    public byte[] generateInvoicePdf(Bill bill) throws Exception {
 
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        Document document = new Document();
-        PdfWriter.getInstance(document, output);
+        Document document = new Document(PageSize.A4, 30, 30, 30, 30);
+
+        PdfWriter.getInstance(document, out);
 
         document.open();
 
-        Font title = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD);
+        Font titleFont = new Font(Font.HELVETICA, 22, Font.BOLD, new Color(0, 52, 153));
+        Font normal = new Font(Font.HELVETICA, 12);
+        Font bold = new Font(Font.HELVETICA, 12, Font.BOLD);
 
-        document.add(new Paragraph("SmartMart Invoice", title));
+        Paragraph title = new Paragraph("SmartMart POS Invoice", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        document.add(title);
+
         document.add(new Paragraph(" "));
-        document.add(new Paragraph("Bill ID: " + bill.getId()));
-        document.add(new Paragraph("Customer: " + bill.getCustomerName()));
-        document.add(new Paragraph("Date: " + bill.getCreatedAt()));
+        document.add(new Paragraph("Invoice No : INV-" + bill.getId(), bold));
+        document.add(new Paragraph("Customer : " + bill.getCustomerName(), normal));
+        document.add(new Paragraph("Date : " + bill.getCreatedAt(), normal));
+        document.add(new Paragraph("Payment Status : " + bill.getPaymentStatus(), normal));
         document.add(new Paragraph(" "));
-        document.add(new Paragraph("Total Amount: ₹" + bill.getTotalAmount()));
-        document.add(new Paragraph("Payment Status: PENDING"));
+
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{4,2,2,2});
+
+        addHeader(table, "Product");
+        addHeader(table, "Qty");
+        addHeader(table, "Price");
+        addHeader(table, "Total");
+
+        for (BillItem item : bill.getItems()) {
+
+            table.addCell(item.getProduct().getName());
+            table.addCell(String.valueOf(item.getQuantity()));
+            table.addCell("₹ " + item.getPrice());
+
+            double total = item.getPrice().doubleValue() * item.getQuantity();
+
+            table.addCell("₹ " + String.format("%.2f", total));
+        }
+
+        document.add(table);
+
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph(
+                "Grand Total : ₹ " + bill.getTotalAmount(),
+                new Font(Font.HELVETICA, 16, Font.BOLD, new Color(0,52,153))
+        ));
+
+        document.add(new Paragraph(" "));
+        Paragraph thanks = new Paragraph("Thank you for shopping with SmartMart!", bold);
+        thanks.setAlignment(Element.ALIGN_CENTER);
+        document.add(thanks);
 
         document.close();
 
-        return output.toByteArray();
+        return out.toByteArray();
+    }
+
+    private void addHeader(PdfPTable table, String text){
+
+        PdfPCell cell = new PdfPCell(new Phrase(text));
+
+        cell.setBackgroundColor(new Color(0,52,153));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setPadding(8);
+
+        cell.setPhrase(new Phrase(text,
+                new Font(Font.HELVETICA,12,Font.BOLD,Color.WHITE)));
+
+        table.addCell(cell);
     }
 }
