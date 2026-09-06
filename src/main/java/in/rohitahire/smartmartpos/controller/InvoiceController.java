@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/invoices")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class InvoiceController {
 
     private final BillRepository billRepository;

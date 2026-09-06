@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/bills")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class BillController {
 
     private final BillService billService;
