@@ -3,6 +3,7 @@ package in.rohitahire.smartmartpos.service;
 import in.rohitahire.smartmartpos.dto.LoginRequest;
 import in.rohitahire.smartmartpos.dto.LoginResponse;
 import in.rohitahire.smartmartpos.entity.User;
+import in.rohitahire.smartmartpos.exception.InvalidCredentialsException;
 import in.rohitahire.smartmartpos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,10 +19,10 @@ public class AuthService {
     public LoginResponse login(LoginRequest request){
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Invalid Username"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid Username"));
 
         if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
-            throw new RuntimeException("Invalid Password");
+            throw new InvalidCredentialsException("Invalid Password");
         }
 
         return new LoginResponse("Login Successful", user.getUsername());
